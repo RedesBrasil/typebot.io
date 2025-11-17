@@ -21,9 +21,11 @@ import { LoaderCircleIcon } from "@typebot.io/ui/icons/LoaderCircleIcon";
 import { Plus01Icon } from "@typebot.io/ui/icons/Plus01Icon";
 import { Tag03Icon } from "@typebot.io/ui/icons/Tag03Icon";
 import { Trash04Icon } from "@typebot.io/ui/icons/Trash04Icon";
+import { Zap04Icon } from "@typebot.io/ui/icons/Zap04Icon";
 import { useState } from "react";
 import { trpc } from "@/lib/queryClient";
 import type { Tag } from "../api/schemas";
+import { TagTriggersDialog } from "./TagTriggersDialog";
 
 type Props = {
   workspaceId: string;
@@ -34,6 +36,7 @@ export const TagsDialog = ({ workspaceId, onClose }: Props) => {
   const { t } = useTranslate();
   const [isCreating, setIsCreating] = useState(false);
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
+  const [selectedTagForTriggers, setSelectedTagForTriggers] = useState<Tag | null>(null);
   const [newTagName, setNewTagName] = useState("");
   const [newTagColor, setNewTagColor] = useState("#6366f1");
 
@@ -298,6 +301,10 @@ export const TagsDialog = ({ workspaceId, onClose }: Props) => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => setSelectedTagForTriggers(tag)}>
+                            <Zap04Icon className="w-4 h-4 mr-2" />
+                            {t("contacts.tags.manageTriggers", { defaultValue: "Manage Triggers" })}
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setEditingTag(tag)}>
                             <Edit04Icon className="w-4 h-4 mr-2" />
                             {t("edit", { defaultValue: "Edit" })}
@@ -321,6 +328,14 @@ export const TagsDialog = ({ workspaceId, onClose }: Props) => {
           )}
         </div>
       </DialogContent>
+
+      {selectedTagForTriggers && (
+        <TagTriggersDialog
+          tag={selectedTagForTriggers}
+          workspaceId={workspaceId}
+          onClose={() => setSelectedTagForTriggers(null)}
+        />
+      )}
     </Dialog>
   );
 };
