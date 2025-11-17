@@ -73,21 +73,21 @@ model ApiToken {
 }
 
 model Workspace {
-  id                            String                @id @default(cuid())
-  createdAt                     DateTime              @default(now())
-  updatedAt                     DateTime              @default(now()) @updatedAt
+  id                            String                  @id @default(cuid())
+  createdAt                     DateTime                @default(now())
+  updatedAt                     DateTime                @default(now()) @updatedAt
   name                          String
   icon                          String?
-  plan                          Plan                  @default(FREE)
-  stripeId                      String?               @unique
+  plan                          Plan                    @default(FREE)
+  stripeId                      String?                 @unique
   credentials                   Credentials[]
   customDomains                 CustomDomain[]
   folders                       DashboardFolder[]
   members                       MemberInWorkspace[]
   typebots                      Typebot[]
   invitations                   WorkspaceInvitation[]
-  additionalChatsIndex          Int                   @default(0)
-  additionalStorageIndex        Int                   @default(0)
+  additionalChatsIndex          Int                     @default(0)
+  additionalStorageIndex        Int                     @default(0)
   chatsLimitFirstEmailSentAt    DateTime?
   storageLimitFirstEmailSentAt  DateTime?
   chatsLimitSecondEmailSentAt   DateTime?
@@ -96,9 +96,9 @@ model Workspace {
   customChatsLimit              Int?
   customStorageLimit            Int?
   customSeatsLimit              Int?
-  isQuarantined                 Boolean               @default(false)
-  isSuspended                   Boolean               @default(false)
-  isPastDue                     Boolean               @default(false)
+  isQuarantined                 Boolean                 @default(false)
+  isSuspended                   Boolean                 @default(false)
+  isPastDue                     Boolean                 @default(false)
   isVerified                    Boolean?
   themeTemplates                ThemeTemplate[]
   chatsHardLimit                Int?
@@ -107,6 +107,10 @@ model Workspace {
   lastActivityAt                DateTime?
   inactiveFirstEmailSentAt      DateTime?
   inactiveSecondEmailSentAt     DateTime?
+  contacts                      Contact[]
+  tags                          Tag[]
+  customFieldDefinitions        CustomFieldDefinition[]
+  tagTriggers                   TagTrigger[]
 }
 
 model MemberInWorkspace {
@@ -213,6 +217,7 @@ model Typebot {
   whatsAppCredentialsId   String?
   riskLevel               Int?
   bannedIps               BannedIp[]
+  tagTriggers             TagTrigger[]
 
   @@index([workspaceId])
   @@index([isArchived, createdAt(sort: Desc)])
@@ -283,7 +288,9 @@ model Result {
   hasStarted         Boolean?
   isArchived         Boolean?                 @default(false)
   lastChatSessionId  String?
+  contactId          String?
   typebot            Typebot                  @relation(fields: [typebotId], references: [id], onDelete: Cascade)
+  contact            Contact?                 @relation(fields: [contactId], references: [id], onDelete: SetNull)
   answers            Answer[]
   answersV2          AnswerV2[]
   logs               Log[]
@@ -292,6 +299,7 @@ model Result {
 
   @@index([typebotId, hasStarted, createdAt(sort: Desc)])
   @@index([typebotId, isCompleted])
+  @@index([contactId])
 }
 
 model SetVariableHistoryItem {
@@ -443,4 +451,95 @@ enum CollaborationType {
   READ
   WRITE
   FULL_ACCESS
+}
+
+// ========================================
+// SISTEMA DE CONTATOS, TAGS E TRIGGERS
+// ========================================
+
+model Contact {
+  id              String         @id @default(cuid())
+  workspaceId     String
+  workspace       Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  phone           String?
+  email           String?
+  externalId      String?
+  name            String?
+  firstName       String?
+  lastName        String?
+  customFields    Json           @default("{}")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  lastInteraction DateTime?
+  tags            TagOnContact[]
+  results         Result[]
+
+  @@unique([workspaceId, phone])
+  @@unique([workspaceId, email])
+  @@unique([workspaceId, externalId])
+  @@index([workspaceId])
+  @@index([phone])
+  @@index([email])
+}
+
+model Tag {
+  id          String         @id @default(cuid())
+  workspaceId String
+  workspace   Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  name        String
+  color       String?
+  description String?
+  createdAt   DateTime       @default(now())
+  contacts    TagOnContact[]
+  triggers    TagTrigger[]
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId])
+}
+
+model TagOnContact {
+  contactId String
+  contact   Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  tagId     String
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  addedAt   DateTime @default(now())
+  addedBy   String?
+
+  @@id([contactId, tagId])
+  @@index([tagId])
+}
+
+model CustomFieldDefinition {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  name         String
+  label        String
+  type         String
+  options      Json?
+  defaultValue Json?
+  isRequired   Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId])
+}
+
+model TagTrigger {
+  id                    String    @id @default(cuid())
+  workspaceId           String
+  workspace             Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  tagId                 String
+  tag                   Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  typebotId             String
+  typebot               Typebot   @relation(fields: [typebotId], references: [id], onDelete: Cascade)
+  eventId               String?
+  triggerType           String
+  isEnabled             Boolean   @default(true)
+  delaySeconds          Int       @default(0)
+  onlyIfNoActiveSession Boolean   @default(true)
+  createdAt             DateTime  @default(now())
+
+  @@index([workspaceId])
+  @@index([tagId])
 }

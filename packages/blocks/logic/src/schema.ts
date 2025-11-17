@@ -1,10 +1,14 @@
 import { z } from "@typebot.io/zod";
 import { abTestBlockSchemas } from "./abTest/schema";
+import { addTagBlockSchema } from "./addTag/schema";
 import { conditionBlockSchemas } from "./condition/schema";
+import { getContactBlockSchema } from "./getContact/schema";
 import { jumpBlockSchema } from "./jump/schema";
 import { redirectBlockSchema } from "./redirect/schema";
+import { removeTagBlockSchema } from "./removeTag/schema";
 import { returnBlockSchema } from "./return/schema";
 import { scriptBlockSchema } from "./script/schema";
+import { setContactBlockSchema } from "./setContact/schema";
 import { setVariableBlockSchema } from "./setVariable/schema";
 import { typebotLinkBlockSchema } from "./typebotLink/schema";
 import { waitBlockSchema } from "./wait/schema";
@@ -18,6 +22,10 @@ const logicBlockSchemas = [
   waitBlockSchema,
   jumpBlockSchema,
   returnBlockSchema,
+  getContactBlockSchema,
+  setContactBlockSchema,
+  addTagBlockSchema,
+  removeTagBlockSchema,
 ] as const;
 
 export const logicBlockV5Schema = z.discriminatedUnion("type", [

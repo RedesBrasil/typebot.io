@@ -35,11 +35,15 @@ import { PixelNodeBody } from "@/features/blocks/integrations/pixel/components/P
 import { SendEmailContent } from "@/features/blocks/integrations/sendEmail/components/SendEmailContent";
 import { ZapierContent } from "@/features/blocks/integrations/zapier/components/ZapierContent";
 import { AbTestNodeBody } from "@/features/blocks/logic/abTest/components/AbTestNodeBody";
+import { AddTagNodeContent } from "@/features/blocks/logic/addTag/components/AddTagNodeContent";
 import { ConditionBlockContent } from "@/features/blocks/logic/condition/components/ConditionBlockContent";
+import { GetContactNodeContent } from "@/features/blocks/logic/getContact/components/GetContactNodeContent";
 import { JumpNodeBody } from "@/features/blocks/logic/jump/components/JumpNodeBody";
 import { RedirectNodeContent } from "@/features/blocks/logic/redirect/components/RedirectNodeContent";
+import { RemoveTagNodeContent } from "@/features/blocks/logic/removeTag/components/RemoveTagNodeContent";
 import { ReturnBlockNodeContent } from "@/features/blocks/logic/return/components/ReturnBlockNodeContent";
 import { ScriptNodeContent } from "@/features/blocks/logic/script/components/ScriptNodeContent";
+import { SetContactNodeContent } from "@/features/blocks/logic/setContact/components/SetContactNodeContent";
 import { SetVariableContent } from "@/features/blocks/logic/setVariable/components/SetVariableContent";
 import { TypebotLinkNode } from "@/features/blocks/logic/typebotLink/components/TypebotLinkNode";
 import { WaitNodeContent } from "@/features/blocks/logic/wait/components/WaitNodeContent";
@@ -137,6 +141,14 @@ export const BlockNodeContent = ({
       return <WebhookNodeContent options={block.options} />;
     case LogicBlockType.RETURN:
       return <ReturnBlockNodeContent />;
+    case LogicBlockType.GET_CONTACT:
+      return <GetContactNodeContent options={block.options} />;
+    case LogicBlockType.SET_CONTACT:
+      return <SetContactNodeContent options={block.options} />;
+    case LogicBlockType.ADD_TAG:
+      return <AddTagNodeContent options={block.options} />;
+    case LogicBlockType.REMOVE_TAG:
+      return <RemoveTagNodeContent options={block.options} />;
     case IntegrationBlockType.GOOGLE_SHEETS: {
       return <GoogleSheetsNodeContent options={block.options} />;
     }

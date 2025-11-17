@@ -31,9 +31,13 @@ import { PixelSettings } from "@/features/blocks/integrations/pixel/components/P
 import { SendEmailSettings } from "@/features/blocks/integrations/sendEmail/components/SendEmailSettings";
 import { ZapierSettings } from "@/features/blocks/integrations/zapier/components/ZapierSettings";
 import { AbTestSettings } from "@/features/blocks/logic/abTest/components/AbTestSettings";
+import { AddTagSettings } from "@/features/blocks/logic/addTag/components/AddTagSettings";
+import { GetContactSettings } from "@/features/blocks/logic/getContact/components/GetContactSettings";
 import { JumpSettings } from "@/features/blocks/logic/jump/components/JumpSettings";
 import { RedirectSettings } from "@/features/blocks/logic/redirect/components/RedirectSettings";
+import { RemoveTagSettings } from "@/features/blocks/logic/removeTag/components/RemoveTagSettings";
 import { ScriptSettings } from "@/features/blocks/logic/script/components/ScriptSettings";
+import { SetContactSettings } from "@/features/blocks/logic/setContact/components/SetContactSettings";
 import { SetVariableSettings } from "@/features/blocks/logic/setVariable/components/SetVariableSettings";
 import { TypebotLinkForm } from "@/features/blocks/logic/typebotLink/components/TypebotLinkForm";
 import { WaitSettings } from "@/features/blocks/logic/wait/components/WaitSettings";
@@ -349,6 +353,34 @@ export const NodeSettings = ({
       return (
         <WebhookSettings
           blockId={node.id}
+          options={node.options}
+          onOptionsChange={updateOptions}
+        />
+      );
+    case LogicBlockType.GET_CONTACT:
+      return (
+        <GetContactSettings
+          options={node.options}
+          onOptionsChange={updateOptions}
+        />
+      );
+    case LogicBlockType.SET_CONTACT:
+      return (
+        <SetContactSettings
+          options={node.options}
+          onOptionsChange={updateOptions}
+        />
+      );
+    case LogicBlockType.ADD_TAG:
+      return (
+        <AddTagSettings
+          options={node.options}
+          onOptionsChange={updateOptions}
+        />
+      );
+    case LogicBlockType.REMOVE_TAG:
+      return (
+        <RemoveTagSettings
           options={node.options}
           onOptionsChange={updateOptions}
         />

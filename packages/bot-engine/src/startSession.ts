@@ -195,6 +195,18 @@ export const startSession = async ({
       initialState = updatedState;
       setVariableHistory.push(...newSetVariableHistory);
     }
+
+    // Auto-identify contact from prefilled variables (Evolution API support)
+    if (startParams.type === "live") {
+      const contactId = await identifyContactFromPrefilledVariables({
+        prefilledVariables: startParams.prefilledVariables,
+        workspaceId: typebot.workspaceId,
+        resultId: result?.id,
+      });
+      if (contactId) {
+        initialState.contactId = contactId;
+      }
+    }
   }
 
   if (startParams.isOnlyRegistering) {
@@ -628,4 +640,67 @@ const getStartingPointFirstBlockId = (
   const nextGroup = typebot.groups.find(byId(nextEdge.to.groupId));
   if (!nextGroup) throw new Error("Next group not found");
   return nextGroup.blocks.at(0)?.id;
+};
+
+const identifyContactFromPrefilledVariables = async ({
+  prefilledVariables,
+  workspaceId,
+  resultId,
+}: {
+  prefilledVariables: Record<string, unknown>;
+  workspaceId: string;
+  resultId?: string;
+}): Promise<string | undefined> => {
+  // Extract potential contact identifiers from prefilled variables
+  // Support for Evolution API (remoteJid) and standard phone/email
+  const remoteJid = prefilledVariables.remoteJid as string | undefined;
+  const phone = (prefilledVariables.phone ||
+    prefilledVariables.phoneNumber ||
+    prefilledVariables.pushName) as string | undefined;
+  const email = prefilledVariables.email as string | undefined;
+  const name = (prefilledVariables.name ||
+    prefilledVariables.pushName ||
+    prefilledVariables.contactName) as string | undefined;
+
+  // Extract phone from remoteJid (format: 5511999999999@s.whatsapp.net)
+  let extractedPhone = phone;
+  if (remoteJid && !extractedPhone) {
+    const phoneMatch = remoteJid.match(/^(\d+)@/);
+    if (phoneMatch) {
+      extractedPhone = phoneMatch[1];
+    }
+  }
+
+  // If no identifier found, skip contact identification
+  if (!extractedPhone && !email && !remoteJid) {
+    return undefined;
+  }
+
+  try {
+    const { findOrCreateContact } = await import(
+      "@typebot.io/contacts/findOrCreateContact"
+    );
+    const prisma = (await import("@typebot.io/prisma")).default;
+
+    const contact = await findOrCreateContact({
+      workspaceId,
+      phone: extractedPhone,
+      email,
+      externalId: remoteJid, // Use remoteJid as externalId for Evolution API
+      name,
+    });
+
+    // Link result to contact if resultId exists
+    if (resultId && contact.id) {
+      await prisma.result.update({
+        where: { id: resultId },
+        data: { contactId: contact.id },
+      });
+    }
+
+    return contact.id;
+  } catch (error) {
+    console.error("Error identifying contact:", error);
+    return undefined;
+  }
 };

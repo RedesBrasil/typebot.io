@@ -5,6 +5,8 @@ import { IntegrationBlockType } from "@typebot.io/blocks-integrations/constants"
 import { LogicBlockType } from "@typebot.io/blocks-logic/constants";
 import { CarouselHorizontal02Icon } from "@typebot.io/ui/icons/CarouselHorizontal02Icon";
 import { Flag02Icon } from "@typebot.io/ui/icons/Flag02Icon";
+import { UserIcon } from "@typebot.io/ui/icons/UserIcon";
+import { UserPlusIcon } from "@typebot.io/ui/icons/UserPlusIcon";
 import { ZapIcon } from "@typebot.io/ui/icons/ZapIcon";
 import { cn } from "@typebot.io/ui/lib/cn";
 import { AudioBubbleIcon } from "@/features/blocks/bubbles/audio/components/AudioBubbleIcon";
@@ -159,6 +161,22 @@ export const BlockIcon = ({ type, className }: BlockIconProps): JSX.Element => {
     case LogicBlockType.WEBHOOK:
       return (
         <WebhookIcon className={cn("text-purple-9 stroke-2", className)} />
+      );
+    case LogicBlockType.GET_CONTACT:
+      return (
+        <UserIcon className={cn("text-purple-9 stroke-2", className)} />
+      );
+    case LogicBlockType.SET_CONTACT:
+      return (
+        <UserPlusIcon className={cn("text-purple-9 stroke-2", className)} />
+      );
+    case LogicBlockType.ADD_TAG:
+      return (
+        <Flag02Icon className={cn("text-purple-9 stroke-2", className)} />
+      );
+    case LogicBlockType.REMOVE_TAG:
+      return (
+        <Flag02Icon className={cn("text-purple-9 stroke-2", className)} />
       );
     case IntegrationBlockType.GOOGLE_SHEETS:
       return <GoogleSheetsLogo className={className} />;
