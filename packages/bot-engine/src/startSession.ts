@@ -202,6 +202,7 @@ export const startSession = async ({
         prefilledVariables: startParams.prefilledVariables,
         workspaceId: typebot.workspaceId,
         resultId: result?.id,
+        sessionStore, // Pass sessionStore to load contact data
       });
       if (contactId) {
         initialState.contactId = contactId;
@@ -646,10 +647,12 @@ const identifyContactFromPrefilledVariables = async ({
   prefilledVariables,
   workspaceId,
   resultId,
+  sessionStore,
 }: {
   prefilledVariables: Record<string, unknown>;
   workspaceId: string;
   resultId?: string;
+  sessionStore?: SessionStore;
 }): Promise<string | undefined> => {
   // Extract potential contact identifiers from prefilled variables
   // Support for Evolution API (remoteJid) and standard phone/email
@@ -695,6 +698,23 @@ const identifyContactFromPrefilledVariables = async ({
       await prisma.result.update({
         where: { id: resultId },
         data: { contactId: contact.id },
+      });
+    }
+
+    // Load contact data into session store for variable parsing
+    if (sessionStore && contact) {
+      const { loadContactDataIntoStore } = await import(
+        "@typebot.io/variables/parseContactVariables"
+      );
+      loadContactDataIntoStore(sessionStore, {
+        id: contact.id,
+        name: contact.name,
+        firstName: contact.firstName,
+        lastName: contact.lastName,
+        email: contact.email,
+        phone: contact.phone,
+        tags: contact.tags?.map((t) => t.tag.name) ?? [],
+        customFields: contact.customFields as Record<string, unknown>,
       });
     }
 

@@ -458,21 +458,22 @@ enum CollaborationType {
 // ========================================
 
 model Contact {
-  id              String         @id @default(cuid())
+  id              String          @id @default(cuid())
   workspaceId     String
-  workspace       Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace       Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   phone           String?
   email           String?
   externalId      String?
   name            String?
   firstName       String?
   lastName        String?
-  customFields    Json           @default("{}")
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  customFields    Json            @default("{}")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
   lastInteraction DateTime?
   tags            TagOnContact[]
   results         Result[]
+  triggerLogs     TagTriggerLog[]
 
   @@unique([workspaceId, phone])
   @@unique([workspaceId, email])
@@ -483,15 +484,16 @@ model Contact {
 }
 
 model Tag {
-  id          String         @id @default(cuid())
+  id          String          @id @default(cuid())
   workspaceId String
-  workspace   Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace   Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   name        String
   color       String?
   description String?
-  createdAt   DateTime       @default(now())
+  createdAt   DateTime        @default(now())
   contacts    TagOnContact[]
   triggers    TagTrigger[]
+  triggerLogs TagTriggerLog[]
 
   @@unique([workspaceId, name])
   @@index([workspaceId])
@@ -526,20 +528,42 @@ model CustomFieldDefinition {
 }
 
 model TagTrigger {
-  id                    String    @id @default(cuid())
+  id                    String          @id @default(cuid())
   workspaceId           String
-  workspace             Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace             Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   tagId                 String
-  tag                   Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tag                   Tag             @relation(fields: [tagId], references: [id], onDelete: Cascade)
   typebotId             String
-  typebot               Typebot   @relation(fields: [typebotId], references: [id], onDelete: Cascade)
+  typebot               Typebot         @relation(fields: [typebotId], references: [id], onDelete: Cascade)
   eventId               String?
   triggerType           String
-  isEnabled             Boolean   @default(true)
-  delaySeconds          Int       @default(0)
-  onlyIfNoActiveSession Boolean   @default(true)
-  createdAt             DateTime  @default(now())
+  isEnabled             Boolean         @default(true)
+  delaySeconds          Int             @default(0)
+  onlyIfNoActiveSession Boolean         @default(true)
+  cooldownSeconds       Int             @default(60)
+  priority              Int             @default(100)
+  createdAt             DateTime        @default(now())
+  logs                  TagTriggerLog[]
 
   @@index([workspaceId])
   @@index([tagId])
+}
+
+model TagTriggerLog {
+  id         String     @id @default(cuid())
+  triggerId  String
+  trigger    TagTrigger @relation(fields: [triggerId], references: [id], onDelete: Cascade)
+  contactId  String
+  contact    Contact    @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  tagId      String
+  tag        Tag        @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  status     String     // SUCCESS, SKIPPED, ERROR, SCHEDULED
+  message    String?
+  metadata   Json       @default("{}")
+  executedAt DateTime   @default(now())
+
+  @@index([triggerId])
+  @@index([contactId])
+  @@index([tagId])
+  @@index([executedAt])
 }

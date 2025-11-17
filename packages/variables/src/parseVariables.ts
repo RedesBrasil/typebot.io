@@ -2,6 +2,10 @@ import { safeStringify } from "@typebot.io/lib/safeStringify";
 import { isDefined, isNotDefined, isNotEmpty } from "@typebot.io/lib/utils";
 import type { SessionStore } from "@typebot.io/runtime-session-store";
 import { createInlineSyncCodeRunner } from "./codeRunners";
+import {
+  isContactVariable,
+  parseContactVariable,
+} from "./parseContactVariables";
 import type { Variable, VariableWithValue } from "./schemas";
 
 export type ParseVariablesOptions = {
@@ -52,6 +56,22 @@ export const parseVariables = (
     (_full, nameInCurlyBraces, _dollarSign, nameInTemplateLitteral) => {
       const dollarSign = (_dollarSign ?? "") as string;
       const matchedVarName = nameInCurlyBraces ?? nameInTemplateLitteral;
+
+      // Check if this is a contact variable (e.g., contact.name, contact.tags)
+      if (isContactVariable(matchedVarName)) {
+        const contactValue = parseContactVariable(matchedVarName, sessionStore);
+        if (contactValue !== undefined) {
+          if (isInsideJson) {
+            return dollarSign + parseVariableValueInJson(contactValue);
+          }
+          if (isInsideHtml) {
+            return dollarSign + parseVariableValueInHtml(contactValue);
+          }
+          return dollarSign + contactValue;
+        }
+        return dollarSign + "";
+      }
+
       const variable = variables.find((variable) => {
         return (
           matchedVarName === variable.name &&

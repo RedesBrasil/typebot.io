@@ -9,12 +9,25 @@ interface ExecuteTagTriggersProps {
   excludeSessionId?: string;
 }
 
+interface TriggerExecutionLog {
+  triggerId: string;
+  contactId: string;
+  status: "success" | "skipped" | "error";
+  reason?: string;
+  details?: Record<string, unknown>;
+  timestamp: Date;
+}
+
+const DEFAULT_COOLDOWN_SECONDS = 60; // 1 minute default cooldown
+
 export const executeTagTriggers = async ({
   contactId,
   tagId,
   triggerType,
   workspaceId,
 }: ExecuteTagTriggersProps) => {
+  const executionLogs: TriggerExecutionLog[] = [];
+
   // Find triggers configured for this tag
   const triggers = await prisma.tagTrigger.findMany({
     where: {
@@ -33,7 +46,9 @@ export const executeTagTriggers = async ({
     },
   });
 
-  if (triggers.length === 0) return { triggersExecuted: 0 };
+  if (triggers.length === 0) {
+    return { triggersExecuted: 0, logs: executionLogs };
+  }
 
   const contact = await prisma.contact.findUnique({
     where: { id: contactId },
@@ -46,11 +61,67 @@ export const executeTagTriggers = async ({
     },
   });
 
-  if (!contact) return { triggersExecuted: 0 };
+  if (!contact) {
+    return { triggersExecuted: 0, logs: executionLogs };
+  }
 
   let triggersExecuted = 0;
 
-  for (const trigger of triggers) {
+  // Sort triggers by priority (lower number = higher priority)
+  const sortedTriggers = [...triggers].sort(
+    (a, b) => (a.priority ?? 100) - (b.priority ?? 100),
+  );
+
+  for (const trigger of sortedTriggers) {
+    const logEntry: TriggerExecutionLog = {
+      triggerId: trigger.id,
+      contactId,
+      status: "skipped",
+      timestamp: new Date(),
+    };
+
+    // Check cooldown period
+    const cooldownSeconds = trigger.cooldownSeconds ?? DEFAULT_COOLDOWN_SECONDS;
+    if (cooldownSeconds > 0) {
+      const cooldownCutoff = new Date(Date.now() - cooldownSeconds * 1000);
+      const recentExecution = await prisma.tagTriggerLog.findFirst({
+        where: {
+          triggerId: trigger.id,
+          contactId,
+          status: "SUCCESS",
+          executedAt: {
+            gte: cooldownCutoff,
+          },
+        },
+        orderBy: {
+          executedAt: "desc",
+        },
+      });
+
+      if (recentExecution) {
+        logEntry.reason = `Cooldown period active (last executed at ${recentExecution.executedAt.toISOString()})`;
+        logEntry.details = {
+          cooldownSeconds,
+          lastExecution: recentExecution.executedAt,
+        };
+        executionLogs.push(logEntry);
+
+        // Log to database
+        await logTriggerExecution({
+          triggerId: trigger.id,
+          contactId,
+          tagId,
+          status: "SKIPPED",
+          message: logEntry.reason,
+        });
+
+        console.log(
+          `Skipping trigger ${trigger.id}: ${logEntry.reason}`,
+        );
+        continue;
+      }
+    }
+
     // Check if contact has active session
     if (trigger.onlyIfNoActiveSession) {
       const activeSession = await prisma.chatSession.findFirst({
@@ -63,6 +134,18 @@ export const executeTagTriggers = async ({
       });
 
       if (activeSession) {
+        logEntry.reason = "Contact has active session";
+        logEntry.details = { sessionId: activeSession.id };
+        executionLogs.push(logEntry);
+
+        await logTriggerExecution({
+          triggerId: trigger.id,
+          contactId,
+          tagId,
+          status: "SKIPPED",
+          message: logEntry.reason,
+        });
+
         console.log(
           `Skipping trigger ${trigger.id}: contact has active session`,
         );
@@ -73,6 +156,18 @@ export const executeTagTriggers = async ({
     // Handle delay
     if (trigger.delaySeconds > 0) {
       // TODO: Implement delayed trigger execution with job queue (BullMQ/Redis)
+      logEntry.reason = `Delayed execution scheduled (${trigger.delaySeconds}s)`;
+      logEntry.details = { delaySeconds: trigger.delaySeconds };
+      executionLogs.push(logEntry);
+
+      await logTriggerExecution({
+        triggerId: trigger.id,
+        contactId,
+        tagId,
+        status: "SCHEDULED",
+        message: `Scheduled for ${trigger.delaySeconds}s delay`,
+      });
+
       console.log(
         `Trigger ${trigger.id} scheduled with ${trigger.delaySeconds}s delay`,
       );
@@ -82,18 +177,80 @@ export const executeTagTriggers = async ({
 
     // Execute trigger immediately
     try {
-      await startTypebotForContact({
+      const result = await startTypebotForContact({
         contact,
         typebotPublicId: trigger.typebot.publicId,
         eventId: trigger.eventId,
       });
+
+      logEntry.status = "success";
+      logEntry.reason = "Trigger executed successfully";
+      logEntry.details = result;
+      executionLogs.push(logEntry);
+
+      await logTriggerExecution({
+        triggerId: trigger.id,
+        contactId,
+        tagId,
+        status: "SUCCESS",
+        message: `Started typebot ${trigger.typebot.publicId}`,
+        metadata: result,
+      });
+
       triggersExecuted++;
     } catch (error) {
+      logEntry.status = "error";
+      logEntry.reason = error instanceof Error ? error.message : String(error);
+      executionLogs.push(logEntry);
+
+      await logTriggerExecution({
+        triggerId: trigger.id,
+        contactId,
+        tagId,
+        status: "ERROR",
+        message: logEntry.reason,
+      });
+
       console.error(`Error executing trigger ${trigger.id}:`, error);
     }
   }
 
-  return { triggersExecuted };
+  return { triggersExecuted, logs: executionLogs };
+};
+
+interface LogTriggerExecutionProps {
+  triggerId: string;
+  contactId: string;
+  tagId: string;
+  status: "SUCCESS" | "SKIPPED" | "ERROR" | "SCHEDULED";
+  message?: string;
+  metadata?: Record<string, unknown>;
+}
+
+const logTriggerExecution = async ({
+  triggerId,
+  contactId,
+  tagId,
+  status,
+  message,
+  metadata,
+}: LogTriggerExecutionProps) => {
+  try {
+    await prisma.tagTriggerLog.create({
+      data: {
+        triggerId,
+        contactId,
+        tagId,
+        status,
+        message,
+        metadata: metadata ?? {},
+        executedAt: new Date(),
+      },
+    });
+  } catch (error) {
+    // Don't fail the main operation if logging fails
+    console.error("Failed to log trigger execution:", error);
+  }
 };
 
 interface StartTypebotForContactProps {
