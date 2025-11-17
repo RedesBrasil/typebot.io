@@ -4,6 +4,7 @@ import { Button } from "@typebot.io/ui/components/Button";
 import { useOpenControls } from "@typebot.io/ui/hooks/useOpenControls";
 import { HardDriveIcon } from "@typebot.io/ui/icons/HardDriveIcon";
 import { Settings01Icon } from "@typebot.io/ui/icons/Settings01Icon";
+import { Users01Icon } from "@typebot.io/ui/icons/Users01Icon";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -44,6 +45,19 @@ export const DashboardHeader = () => {
           />
         </Link>
         <div className="flex items-center gap-2">
+          {!workspace?.isPastDue && (
+            <Link href="/contacts">
+              <Button
+                variant="ghost"
+                disabled={isNotDefined(workspace) || isLoggingOut}
+              >
+                <Users01Icon />
+                {t("dashboard.header.contactsButton.label", {
+                  defaultValue: "Contacts",
+                })}
+              </Button>
+            </Link>
+          )}
           {user && workspace && !workspace.isPastDue && (
             <WorkspaceSettingsDialog
               isOpen={isOpen}
