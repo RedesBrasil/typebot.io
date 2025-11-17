@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@typebot.io/ui/components/Table";
 import { LoaderCircleIcon } from "@typebot.io/ui/icons/LoaderCircleIcon";
+import { Plus01Icon } from "@typebot.io/ui/icons/Plus01Icon";
 import { Search01Icon } from "@typebot.io/ui/icons/Search01Icon";
 import { Tag03Icon } from "@typebot.io/ui/icons/Tag03Icon";
 import { Users01Icon } from "@typebot.io/ui/icons/Users01Icon";
@@ -20,6 +21,7 @@ import { Seo } from "@/components/Seo";
 import { DashboardHeader } from "@/features/dashboard/components/DashboardHeader";
 import { useWorkspace } from "@/features/workspace/WorkspaceProvider";
 import { trpc } from "@/lib/queryClient";
+import { ContactCreateDialog } from "./ContactCreateDialog";
 import { ContactRow } from "./ContactRow";
 import { TagsDialog } from "./TagsDialog";
 
@@ -28,6 +30,7 @@ export const ContactsPage = () => {
   const { workspace } = useWorkspace();
   const [searchQuery, setSearchQuery] = useState("");
   const [isTagsDialogOpen, setIsTagsDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   const { data, isLoading, refetch } = useQuery(
     trpc.contacts.listContacts.queryOptions(
@@ -60,6 +63,10 @@ export const ContactsPage = () => {
             )}
           </div>
           <div className="flex items-center gap-2">
+            <Button onClick={() => setIsCreateDialogOpen(true)}>
+              <Plus01Icon />
+              {t("contacts.createContact", { defaultValue: "Create Contact" })}
+            </Button>
             <Button variant="secondary" onClick={() => setIsTagsDialogOpen(true)}>
               <Tag03Icon />
               {t("contacts.manageTags", { defaultValue: "Manage Tags" })}
@@ -147,6 +154,14 @@ export const ContactsPage = () => {
         <TagsDialog
           workspaceId={workspace.id}
           onClose={() => setIsTagsDialogOpen(false)}
+        />
+      )}
+
+      {isCreateDialogOpen && workspace && (
+        <ContactCreateDialog
+          workspaceId={workspace.id}
+          onClose={() => setIsCreateDialogOpen(false)}
+          onCreate={() => refetch()}
         />
       )}
     </div>

@@ -1,5 +1,6 @@
 import { router } from "@/helpers/server/trpc";
 import { addTagToContact } from "./addTagToContact";
+import { createContact } from "./createContact";
 import { createTag } from "./createTag";
 import { createTagTrigger } from "./createTagTrigger";
 import { deleteContact } from "./deleteContact";
@@ -18,6 +19,7 @@ export const contactsRouter = router({
   // Contacts
   listContacts,
   getContact,
+  createContact,
   updateContact,
   deleteContact,
 
