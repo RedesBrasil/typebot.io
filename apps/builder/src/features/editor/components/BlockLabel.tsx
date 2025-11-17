@@ -76,10 +76,10 @@ export const getLogicBlockLabel = (
   [LogicBlockType.AB_TEST]: t("editor.sidebarBlock.abTest.label"),
   [LogicBlockType.WEBHOOK]: "Webhook",
   [LogicBlockType.RETURN]: "Return",
-  [LogicBlockType.GET_CONTACT]: "Get contact",
-  [LogicBlockType.SET_CONTACT]: "Set contact",
-  [LogicBlockType.ADD_TAG]: "Add tag",
-  [LogicBlockType.REMOVE_TAG]: "Remove tag",
+  [LogicBlockType.GET_CONTACT]: t("editor.sidebarBlock.getContact.label"),
+  [LogicBlockType.SET_CONTACT]: t("editor.sidebarBlock.setContact.label"),
+  [LogicBlockType.ADD_TAG]: t("editor.sidebarBlock.addTag.label"),
+  [LogicBlockType.REMOVE_TAG]: t("editor.sidebarBlock.removeTag.label"),
 });
 
 export const getIntegrationBlockLabel = (

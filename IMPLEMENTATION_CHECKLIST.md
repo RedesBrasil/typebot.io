@@ -66,9 +66,9 @@ This document tracks the implementation progress of a global contact management 
 - [x] Register label in BlockLabel.tsx
 - [x] Register settings in SettingsPopoverContent.tsx
 - [x] Register content in BlockNodeContent.tsx
-- [ ] Add localization strings (i18n)
+- [x] Add localization strings (i18n) - en, pt-BR, pt, es
 - [ ] Write unit tests
-- [ ] Document block usage
+- [x] Document block usage - docs/CONTACT_MANAGEMENT_BLOCKS.md
 
 ### 2.2 SET_CONTACT Block
 - [x] Define block type in constants
@@ -82,9 +82,9 @@ This document tracks the implementation progress of a global contact management 
 - [x] Register label in BlockLabel.tsx
 - [x] Register settings in SettingsPopoverContent.tsx
 - [x] Register content in BlockNodeContent.tsx
-- [ ] Add localization strings (i18n)
+- [x] Add localization strings (i18n) - en, pt-BR, pt, es
 - [ ] Write unit tests
-- [ ] Document block usage
+- [x] Document block usage - docs/CONTACT_MANAGEMENT_BLOCKS.md
 
 ### 2.3 ADD_TAG Block
 - [x] Define block type in constants
@@ -98,9 +98,9 @@ This document tracks the implementation progress of a global contact management 
 - [x] Register label in BlockLabel.tsx
 - [x] Register settings in SettingsPopoverContent.tsx
 - [x] Register content in BlockNodeContent.tsx
-- [ ] Add localization strings (i18n)
+- [x] Add localization strings (i18n) - en, pt-BR, pt, es
 - [ ] Write unit tests
-- [ ] Document block usage
+- [x] Document block usage - docs/CONTACT_MANAGEMENT_BLOCKS.md
 
 ### 2.4 REMOVE_TAG Block
 - [x] Define block type in constants
@@ -114,9 +114,9 @@ This document tracks the implementation progress of a global contact management 
 - [x] Register label in BlockLabel.tsx
 - [x] Register settings in SettingsPopoverContent.tsx
 - [x] Register content in BlockNodeContent.tsx
-- [ ] Add localization strings (i18n)
+- [x] Add localization strings (i18n) - en, pt-BR, pt, es
 - [ ] Write unit tests
-- [ ] Document block usage
+- [x] Document block usage - docs/CONTACT_MANAGEMENT_BLOCKS.md
 
 ---
 
@@ -383,31 +383,33 @@ This document tracks the implementation progress of a global contact management 
 
 ### Overall Progress
 - **Phase 1**: Core Infrastructure - 85% Complete
-- **Phase 2**: Logic Blocks - 90% Complete
+- **Phase 2**: Logic Blocks - 95% Complete ✅ (only unit tests pending)
 - **Phase 3**: Bot Engine Integration - 60% Complete
 - **Phase 4**: Builder Dashboard - 0% Complete
 - **Phase 5**: API Layer - 0% Complete
 - **Phase 6**: Testing - 0% Complete
-- **Phase 7**: Documentation - 20% Complete
+- **Phase 7**: Documentation - 40% Complete
 - **Phase 8**: Security & Performance - 0% Complete
 - **Phase 9**: Deployment - 0% Complete
 
 ### Commits Made
 1. `4ee4f7f` - ✨ Add contact management and tagging system (41 files, 1899 insertions)
 2. `98483ed` - 📝 Add CLAUDE.md project documentation
+3. `7f99f5e` - 📋 Add implementation checklist for contact management system
+4. *(pending)* - 🌐 Add i18n and documentation for contact blocks
 
 ### Next Priority Tasks
 1. Generate Prisma database migration
 2. Implement contact variable parsing ({{contact.*}})
-3. Add localization strings for new blocks
-4. Create contacts management dashboard UI
-5. Implement tRPC routers for CRUD operations
+3. Create contacts management dashboard UI
+4. Implement tRPC routers for CRUD operations
+5. Add API endpoints for external integrations
 
 ---
 
 ## 🗓️ Implementation Notes
 
-### Session: 2025-11-17
+### Session: 2025-11-17 (Part 1)
 
 **Completed:**
 - Full database schema with 5 new models
@@ -427,6 +429,31 @@ This document tracks the implementation progress of a global contact management 
 - Implemented skipTriggers option to prevent infinite loops
 - Added workspaceId to all models for multi-tenancy
 - Used JSON field for customFields for flexibility
+
+### Session: 2025-11-17 (Part 2)
+
+**Completed:**
+- Added localization strings (i18n) for all 4 blocks in:
+  - English (en.json)
+  - Portuguese Brazil (pt-BR.json)
+  - Portuguese Portugal (pt.json)
+  - Spanish (es.json)
+- Updated BlockLabel.tsx to use translation functions
+- Created comprehensive block documentation (docs/CONTACT_MANAGEMENT_BLOCKS.md)
+- Updated implementation checklist with current progress
+
+**Files Modified:**
+- `apps/builder/src/i18n/en.json` - Added 4 new translation keys
+- `apps/builder/src/i18n/pt-BR.json` - Added Portuguese (BR) translations
+- `apps/builder/src/i18n/pt.json` - Added Portuguese (PT) translations
+- `apps/builder/src/i18n/es.json` - Added Spanish translations
+- `apps/builder/src/features/editor/components/BlockLabel.tsx` - Use i18n keys
+- `docs/CONTACT_MANAGEMENT_BLOCKS.md` - Complete user guide (NEW)
+
+**Phase 2 Status:**
+- Logic Blocks implementation is 95% complete
+- Only pending: Unit tests (optional per user request)
+- All blocks have: schemas, executors, UI, icons, labels, settings, i18n, documentation
 
 ---
 
