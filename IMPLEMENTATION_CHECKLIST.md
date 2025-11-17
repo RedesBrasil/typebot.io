@@ -188,10 +188,10 @@ This document tracks the implementation progress of a global contact management 
 - [x] Implement trigger creation API (createTagTrigger)
 - [x] Add trigger type selection (TAG_ADDED/TAG_REMOVED)
 - [x] Integrate typebot selection validation
-- [ ] Show trigger execution history UI
+- [x] Show trigger execution history UI (TriggerLogsDialog)
 - [x] Add trigger enable/disable toggle (via updateTagTrigger)
 - [ ] Implement trigger testing functionality
-- [ ] Create trigger logs viewer
+- [x] Create trigger logs viewer (with filtering and pagination)
 - [ ] Add trigger conditions builder
 
 ### 4.4 Custom Fields Management
@@ -241,7 +241,7 @@ This document tracks the implementation progress of a global contact management 
 - [x] `contacts.deleteTagTrigger` - Delete trigger
 - [x] Toggle via updateTagTrigger (isEnabled field)
 - [ ] `triggers.test` - Test trigger execution
-- [ ] `triggers.getLogs` - Get trigger execution logs
+- [x] `contacts.listTriggerLogs` - Get trigger execution logs
 
 #### Custom Fields Router
 - [ ] `customFields.list` - List field definitions
@@ -386,8 +386,8 @@ This document tracks the implementation progress of a global contact management 
 - **Phase 1**: Core Infrastructure - 100% Complete ✅ (migration created)
 - **Phase 2**: Logic Blocks - 95% Complete ✅ (only unit tests pending)
 - **Phase 3**: Bot Engine Integration - 90% Complete ✅ (conditional triggers and autocomplete pending)
-- **Phase 4**: Builder Dashboard - 80% Complete ✅ (core UI + triggers management done)
-- **Phase 5**: API Layer - 85% Complete ✅ (core CRUD + create contact done)
+- **Phase 4**: Builder Dashboard - 85% Complete ✅ (core UI + triggers + logs done)
+- **Phase 5**: API Layer - 90% Complete ✅ (core CRUD + logs done)
 - **Phase 6**: Testing - 0% Complete
 - **Phase 7**: Documentation - 50% Complete
 - **Phase 8**: Security & Performance - 10% Complete (auth implemented)
@@ -403,13 +403,15 @@ This document tracks the implementation progress of a global contact management 
 7. `1c5ecbe` - 📋 Update implementation checklist with Phase 4 progress
 8. `63ac01e` - ✨ Add database migration and contact creation functionality
 9. `dd5f45e` - ⚡ Add tag triggers management UI
+10. `50f9460` - 📋 Update implementation checklist with Phase 5 progress
+11. `5f83431` - 📊 Add trigger execution logs viewer
 
 ### Next Priority Tasks
 1. Add bulk operations for contacts (bulk tagging, bulk delete)
 2. Create contact/tag import/export functionality (CSV)
-3. Add trigger execution logs viewer
-4. Implement contact activity timeline
-5. Add variable autocomplete in builder for contact variables
+3. Implement contact activity timeline
+4. Add variable autocomplete in builder for contact variables
+5. Write unit and integration tests
 
 ---
 
