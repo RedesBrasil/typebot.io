@@ -10,6 +10,7 @@ import { getContact } from "./getContact";
 import { listContacts } from "./listContacts";
 import { listTags } from "./listTags";
 import { listTagTriggers } from "./listTagTriggers";
+import { listTriggerLogs } from "./listTriggerLogs";
 import { removeTagFromContact } from "./removeTagFromContact";
 import { updateContact } from "./updateContact";
 import { updateTag } from "./updateTag";
@@ -38,4 +39,5 @@ export const contactsRouter = router({
   createTagTrigger,
   updateTagTrigger,
   deleteTagTrigger,
+  listTriggerLogs,
 });

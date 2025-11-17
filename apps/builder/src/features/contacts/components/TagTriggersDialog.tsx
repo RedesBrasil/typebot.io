@@ -24,6 +24,7 @@ import {
 } from "@typebot.io/ui/components/Select";
 import { Switch } from "@typebot.io/ui/components/Switch";
 import { DotsVertical02Icon } from "@typebot.io/ui/icons/DotsVertical02Icon";
+import { ListIcon } from "@typebot.io/ui/icons/ListIcon";
 import { LoaderCircleIcon } from "@typebot.io/ui/icons/LoaderCircleIcon";
 import { Plus01Icon } from "@typebot.io/ui/icons/Plus01Icon";
 import { Trash04Icon } from "@typebot.io/ui/icons/Trash04Icon";
@@ -31,6 +32,7 @@ import { Zap04Icon } from "@typebot.io/ui/icons/Zap04Icon";
 import { useState } from "react";
 import { trpc } from "@/lib/queryClient";
 import type { Tag, TagTrigger } from "../api/schemas";
+import { TriggerLogsDialog } from "./TriggerLogsDialog";
 
 type Props = {
   tag: Tag;
@@ -50,6 +52,7 @@ type TriggerFormData = {
 export const TagTriggersDialog = ({ tag, workspaceId, onClose }: Props) => {
   const { t } = useTranslate();
   const [isCreating, setIsCreating] = useState(false);
+  const [isLogsDialogOpen, setIsLogsDialogOpen] = useState(false);
   const [formData, setFormData] = useState<TriggerFormData>({
     triggerType: "TAG_ADDED",
     typebotId: "",
@@ -158,16 +161,26 @@ export const TagTriggersDialog = ({ tag, workspaceId, onClose }: Props) => {
                   "Configure automated flows when this tag is added or removed",
               })}
             </p>
-            {!isCreating && (
+            <div className="flex items-center gap-2">
               <Button
-                variant="secondary"
+                variant="ghost"
                 size="sm"
-                onClick={() => setIsCreating(true)}
+                onClick={() => setIsLogsDialogOpen(true)}
               >
-                <Plus01Icon className="w-4 h-4" />
-                {t("contacts.triggers.create", { defaultValue: "Add Trigger" })}
+                <ListIcon className="w-4 h-4" />
+                {t("contacts.triggers.viewLogs", { defaultValue: "View Logs" })}
               </Button>
-            )}
+              {!isCreating && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setIsCreating(true)}
+                >
+                  <Plus01Icon className="w-4 h-4" />
+                  {t("contacts.triggers.create", { defaultValue: "Add Trigger" })}
+                </Button>
+              )}
+            </div>
           </div>
 
           {isCreating && (
@@ -390,6 +403,13 @@ export const TagTriggersDialog = ({ tag, workspaceId, onClose }: Props) => {
           )}
         </div>
       </DialogContent>
+
+      {isLogsDialogOpen && (
+        <TriggerLogsDialog
+          tag={tag}
+          onClose={() => setIsLogsDialogOpen(false)}
+        />
+      )}
     </Dialog>
   );
 };
