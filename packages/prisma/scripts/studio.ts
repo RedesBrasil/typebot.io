@@ -1,3 +1,6 @@
 import { executePrismaCommand } from "./executeCommand";
 
-executePrismaCommand("BROWSER=none prisma studio");
+// Set BROWSER env var before running studio (works on both Windows and Linux)
+process.env.BROWSER = "none";
+
+executePrismaCommand("prisma studio");
